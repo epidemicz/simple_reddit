@@ -1,5 +1,6 @@
 <html>                                                                  
-  <head>         
+  <head>      
+    <title>simple reddit</title>
     <style>
       #divpopup{
         position: fixed;
@@ -19,6 +20,14 @@
         background-color: white;
         padding: 5px;
         z-index: 10;
+        border-bottom:solid 1px black;
+      }
+      body{
+        font-family:tahoma;
+        font-size:small;
+      }
+      a:hover{
+        background-color:#EEEEEE;
       }
     </style>
     <script type="text/javascript" src="jquery.js"></script>          
@@ -29,29 +38,36 @@
       var sort = "hot";
       
       // we will add our javascript code here
-      function fetch_reddit_links(cnt, after, sort){
+      function fetch_reddit_links(last_item, sort){
         var query;
         var l = document.getElementById("links");
-        if (after == null) {
+        if (last_item == null) {
           query = "http://www.reddit.com/" + sort + ".json?jsonp=?&limit=100";
         }
         else {
-          query = "http://www.reddit.com/" + sort + ".json?jsonp=?&limit=100&after=" + after
+          query = "http://www.reddit.com/" + sort + ".json?jsonp=?&limit=100&after=" + last_item
         }
         
         $.getJSON(query, function(data) { 
+          // we grab the after var from the json
           after = data.data.after;
-          $.each(data.data.children, function(i, item){
-            var sub_color = false;
-            count = count + 1;
+          
+          // loop through each of the items in data.data.children
+          $.each(data.data.children, function(i, item) {
+            var sub_color = "black";  // subreddit color
+            count = count + 1;        // running tally of the # of items we've returned
             
             // if nsfw flag set, make subreddit color red
-            if ( item.data.over_18 == true )
+            if (item.data.over_18 == true)
               sub_color = "red";
             else
-              sub_color = "black";1
+              sub_color = "black";
+              
+            // create new span for each "row"
             newLink = document.createElement("span");
             newLink.innerHTML = count + ".) " + "<span style=\"color:" + sub_color + "\">[" + item.data.subreddit + "]</span> <a target=\"_blank\" href=\"" + item.data.url + "\">" + item.data.title + "</a> [<a target=\"_blank\" href=\"http://reddit.com" + item.data.permalink + "\">comments</a>]<br/>";
+            
+            // appending the span to our links div
             l.appendChild(newLink);
           });
         });
@@ -59,38 +75,42 @@
         
       $(document).ready(function() {
         // do stuff when DOM is ready
-        $("#blah").click(function() {
-          alert("after=" + after + " count = " + count);
-        });
 
+        // clicked the "hot" link
         $("#hot").click(function() {
           count = 0;
           sort = "hot";
           document.getElementById("links").innerHTML = "";
-          fetch_reddit_links(count, null, sort);
+          fetch_reddit_links(null, sort);
         });
         
+        // clicked the "new" link
         $("#new").click(function() {
           count = 0;
           sort = "new";
           document.getElementById("links").innerHTML = "";
-          fetch_reddit_links(count, null, sort);
+          fetch_reddit_links(null, sort);
         });
         
+        // clicked the "top" link
         $("#top").click(function() {
           count = 0;
           sort = "top";
           document.getElementById("links").innerHTML = "";
-          fetch_reddit_links(count, null, sort);
+          fetch_reddit_links(null, sort);
         });
 
+        // setup callback for endless scroll
         $(document).endlessScroll({
           bottomPixels:300,
           fireOnce: true,
           fireDelay: 5000,
           loader:"<div id=\"divpopup\">Loading... Please wait..</div>",
           callback:function(p) {
-            fetch_reddit_links(count, after, sort);
+            // for debugging, I want to see what the "after" variable is
+            // if we don't have it, or it is invalid we won't get more results
+            document.getElementById("debug_after").innerHTML = "after=" + after;
+            fetch_reddit_links(after, sort);
           }
         });
       });                                    
@@ -98,7 +118,13 @@
   </head>                                                                 
   <body>                                                                  
     <!-- we will add our HTML content here -->     
-    <div id="header"><a href="#" id="hot">Hot</a> | <a href="#" id="new">New</a> | <a href="#" id="top">Top</a></div>
+    <div id="header">
+      <span>simple reddit</span> | 
+      <a href="#" id="hot">hot</a> | 
+      <a href="#" id="new">new</a> | 
+      <a href="#" id="top">top</a>
+      <span id="debug_after"><span>
+    </div>
     <div id="links" style="padding-top:20px;"></div>
   </body>                                                       
 </html>
