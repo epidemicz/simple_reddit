@@ -6,9 +6,9 @@
         position: fixed;
         top: 25px;
         left: 0px;
-        border: 1px solid #000;
-        background-color: black;
-        color: white;
+        border: 1px solid #black;
+        background-color: #EEE;
+        color: black;
         padding: 5px;
         z-index: 10;
       }
@@ -20,34 +20,77 @@
         background-color: white;
         padding: 5px;
         z-index: 10;
-        border-bottom:solid 1px black;
+        border-bottom:solid 1px #EEE;
       }
-      body{
+      #pick_sub_chooser{
+        position: fixed;
+        top: 30px;
+        left: 100px;
+        border: 1px solid #EEE;
+        background-color: white;
+        color: black;
+        padding: 5px;
+        z-index: 10;
+        display:none;
+      }
+      body,input{
         font-family:tahoma;
         font-size:small;
       }
       a:hover{
         background-color:#EEEEEE;
       }
+      .subreddit{
+        color:black;
+        text-decoration:none;
+      }
+      .subreddit:hover{
+        color:red;
+        text-decoratioN:underline;
+      }
+      form{
+        padding:0;
+        margin:0;
+      }
     </style>
     <script type="text/javascript" src="jquery.js"></script>          
     <script type="text/javascript" src="endless-scroll.js"></script>   
     <script type="text/javascript">     
-      var after = "";
-      var count = 0;
-      var sort = "hot";
+      var query = null;           // the query we're sending to the api
+      var after = "";             // the last link, api uses this to fetch the next batch of results.
+      var count = 0;              // our count of links returned.
+      var current_sub = "r/all";  // current sub_reddit we're on.
+      var current_tab = "hot";    // current tab of the sub we're on, hot new or top
+      var show_nsfw = false;      // flag to say wheter or not to hide nsfw items
+            
       
       // we will add our javascript code here
-      function fetch_reddit_links(last_item, sort){
-        var query;
-        var l = document.getElementById("links");
+      function fetch_reddit_links(last_item, sub_reddit, tab){
+        var links = document.getElementById("links");   // our links div
+        
+        // if we do not have a last_item we leave off the after query param
         if (last_item == null) {
-          query = "http://www.reddit.com/" + sort + ".json?jsonp=?&limit=100";
+          query = "http://www.reddit.com/" + sub_reddit + "/" + tab + ".json?jsonp=?&limit=100";
         }
         else {
-          query = "http://www.reddit.com/" + sort + ".json?jsonp=?&limit=100&after=" + last_item
+          query = "http://www.reddit.com/" + sub_reddit + "/" + tab + ".json?jsonp=?&limit=100&after=" + last_item
         }
         
+        // if nsfw_mode is nsfw:show then we can show nsfw else hide it
+        if (document.getElementById("nsfw_mode").innerHTML == "nsfw:show") {
+          show_nsfw = true;
+        }
+        else {
+          show_nsfw = false;
+        }
+        
+        // set our current sub label
+        $("#current_sub").html(current_sub);
+        
+        // debugging the query string
+        document.getElementById("debug_query").innerHTML = query;
+        
+        // sending the string to the api.  hope we get something back, it's been a while since I've seen a picture of a cat.
         $.getJSON(query, function(data) { 
           // we grab the after var from the json
           after = data.data.after;
@@ -58,46 +101,122 @@
             count = count + 1;        // running tally of the # of items we've returned
             
             // if nsfw flag set, make subreddit color red
-            if (item.data.over_18 == true)
+            if (item.data.over_18 == true) {
               sub_color = "red";
-            else
+              
+              //if we're not supposed to show nsfw content, skip this one
+              if (!show_nsfw) {
+                // per jquery docs: "Returning non-false is the same as a 
+                //                  continue statement in a for loop; 
+                //                  it will skip immediately to 
+                //                  the next iteration."
+                return true;
+              }
+            }
+            else {
               sub_color = "black";
+            }
               
             // create new span for each "row"
             newLink = document.createElement("span");
-            newLink.innerHTML = count + ".) " + "<span style=\"color:" + sub_color + "\">[" + item.data.subreddit + "]</span> <a target=\"_blank\" href=\"" + item.data.url + "\">" + item.data.title + "</a> [<a target=\"_blank\" href=\"http://reddit.com" + item.data.permalink + "\">comments</a>]<br/>";
+            newLink.innerHTML = count + ".) " + "<span style=\"color:" + sub_color + "\">[<a target=\"_blank\" class=\"subreddit\" href=\"http://www.reddit.com/r/" + item.data.subreddit + "\">" + item.data.subreddit + "</a>]</span> <a target=\"_blank\" href=\"" + item.data.url + "\">" + item.data.title + "</a> [<a target=\"_blank\" href=\"http://reddit.com" + item.data.permalink + "\">comments</a>]<br/>";
             
             // appending the span to our links div
-            l.appendChild(newLink);
+            links.appendChild(newLink);
           });
         });
       } 
-        
-      $(document).ready(function() {
-        // do stuff when DOM is ready
 
+
+      // do stuff when DOM is ready      
+      $(document).ready(function() {
+      
+        // clicked the "pick sub" link
+        $("#pick_sub").click(function() {
+          // toggles pick_sub_chooser style.visible hidden/visible
+          // ternary!
+          //var pick_sub_chooser = document.getElementById("pick_sub_chooser");
+          //pick_sub_chooser.style.visibility = (pick_sub_chooser.style.visibility == "visible") ? "hidden" : "visible";
+          
+          // thinking the fade in looks better maybe
+          $("#pick_sub_chooser").fadeIn();
+          
+          // set focus to the text box
+          //document.getElementById("pick_sub_chooser_text").focus();
+          $("#pick_sub_chooser_text").focus();
+          
+          //clear 
+          $("#pick_sub_chooser_text").val("");
+        });    
+        
+        $("#pick_sub_chooser").focusout(function() {
+          $("#pick_sub_chooser").fadeOut();
+        });
+
+        // pick_sub_form has been submitted
+        $("#pick_sub_form").submit(function() {
+          // set current_sub = the info from pick_sub_chooser_text
+          current_sub = "r/" + document.getElementById("pick_sub_chooser_text").value;
+          
+          // hide the pick_sub_chooser
+          document.getElementById("pick_sub_chooser").style.visibility = "hidden";
+          
+          // clear current results
+          // wow, i should probably have been using jquery the whole time for this
+          // instead of document.getElementById("").innerHTML
+          // see: http://stackoverflow.com/questions/3563107/jquery-html-vs-innerhtml
+          $("#links").html("");
+          
+          // go to our newly chosen sub
+          fetch_reddit_links(null, current_sub, current_tab);
+          
+          // we need to disable the form from refreshing the page
+          // http://stackoverflow.com/questions/1263852/prevent-form-redirect-or-refresh-on-submit
+          return false;
+        });  
+        
+        // clicked the "nsfw_mode" link
+        $("#nsfw_mode").click(function() {
+          // toggle between nsfw:hide and nsfw:show
+          // i kind of just wanted to use a ternary operator here
+          var nsfw_mode = document.getElementById("nsfw_mode");
+          nsfw_mode.innerHTML = (nsfw_mode.innerHTML == "nsfw:show") ? "nsfw:hide" : "nsfw:show";
+        });
+      
         // clicked the "hot" link
         $("#hot").click(function() {
-          count = 0;
-          sort = "hot";
+          count = 0;    // resetting vars
+          after = "";
+          current_tab = "hot";
           document.getElementById("links").innerHTML = "";
-          fetch_reddit_links(null, sort);
+          fetch_reddit_links(null, current_sub, current_tab);
         });
         
         // clicked the "new" link
         $("#new").click(function() {
-          count = 0;
-          sort = "new";
+          // it appears that the default sort for /new is rising?
+          // this may be a problem, because rising is often blank
+          // should probably allow the ability to modify the sort
+          count = 0;    // resetting vars
+          after = "";
+          current_tab = "new";
           document.getElementById("links").innerHTML = "";
-          fetch_reddit_links(null, sort);
+          fetch_reddit_links(null, current_sub, current_tab);
         });
         
         // clicked the "top" link
         $("#top").click(function() {
-          count = 0;
-          sort = "top";
+          count = 0;    // resetting vars
+          after = "";
+          current_tab = "top";
           document.getElementById("links").innerHTML = "";
-          fetch_reddit_links(null, sort);
+          fetch_reddit_links(null, current_sub, current_tab);
+        });
+        
+        // clicked debug_query text 
+        // this is for debugging only
+        $("#debug_query").click(function() {
+          // maybe do something fany here like enter in custom query?
         });
 
         // setup callback for endless scroll
@@ -110,20 +229,29 @@
             // for debugging, I want to see what the "after" variable is
             // if we don't have it, or it is invalid we won't get more results
             document.getElementById("debug_after").innerHTML = "after=" + after;
-            fetch_reddit_links(after, sort);
+            fetch_reddit_links(after, current_sub, current_tab);
           }
         });
-      });                                    
+      });  
+
     </script>                                                               
   </head>                                                                 
   <body>                                                                  
     <!-- we will add our HTML content here -->     
     <div id="header">
-      <span>simple reddit</span> | 
-      <a href="#" id="hot">hot</a> | 
-      <a href="#" id="new">new</a> | 
-      <a href="#" id="top">top</a>
-      <span id="debug_after"><span>
+      <span>simple reddit: <span id="current_sub">r/all</span></span> | 
+      <a href="javascript:null(0);" id="pick_sub">pick subreddit</a> | 
+      <a href="javascript:null(0);" id="nsfw_mode">nsfw:hide</a> | 
+      <a href="javascript:null(0);" id="hot">hot</a> | 
+      <a href="javascript:null(0);" id="new">new</a> | 
+      <a href="javascript:null(0);" id="top">top</a> | 
+      <span id="debug_after"></span>
+      <span>query=<span id="debug_query"></span></span>
+    </div>
+    <div id="pick_sub_chooser">
+      <form id="pick_sub_form">
+        r/<input type="text" id="pick_sub_chooser_text"/>
+      </form>
     </div>
     <div id="links" style="padding-top:20px;"></div>
   </body>                                                       
