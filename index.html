@@ -158,8 +158,8 @@
           // set current_sub = the info from pick_sub_chooser_text
           current_sub = "r/" + document.getElementById("pick_sub_chooser_text").value;
           
-          // hide the pick_sub_chooser
-          document.getElementById("pick_sub_chooser").style.visibility = "hidden";
+          // hide the sub picker
+          $("#pick_sub_chooser").fadeOut();
           
           // clear current results
           // wow, i should probably have been using jquery the whole time for this
