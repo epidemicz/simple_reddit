@@ -127,7 +127,6 @@
         });
       } 
 
-
       // do stuff when DOM is ready      
       $(document).ready(function() {
       
@@ -155,6 +154,9 @@
 
         // pick_sub_form has been submitted
         $("#pick_sub_form").submit(function() {
+          // reset count var
+          count = 0;
+          
           // set current_sub = the info from pick_sub_chooser_text
           current_sub = "r/" + document.getElementById("pick_sub_chooser_text").value;
           
@@ -229,6 +231,15 @@
             // for debugging, I want to see what the "after" variable is
             // if we don't have it, or it is invalid we won't get more results
             document.getElementById("debug_after").innerHTML = "after=" + after;
+            
+            // there's a bug that happens if you scroll to bottom
+            // before the delay timer finishes
+            // and pick a subreddit this will fire before
+            // the form submit does.
+            // so if pick_sub_chooser is open then we'll return
+            if($("#pick_sub_chooser").css("display") == "block") {
+              return;
+            }
             fetch_reddit_links(after, current_sub, current_tab);
           }
         });
