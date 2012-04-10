@@ -55,25 +55,26 @@
     </style>
     <script type="text/javascript" src="jquery.js"></script>          
     <script type="text/javascript" src="endless-scroll.js"></script>   
+    <script type="text/javascript" src="jquery.xdomainajax.js"></script> 
     <script type="text/javascript">     
       var query = null;           // the query we're sending to the api
       var after = "";             // the last link, api uses this to fetch the next batch of results.
       var count = 0;              // our count of links returned.
       var current_sub = "r/all";  // current sub_reddit we're on.
-      var current_tab = "hot";    // current tab of the sub we're on, hot new or top
+      var current_tab = "/hot";   // current tab of the sub we're on, hot new or top
       var show_nsfw = false;      // flag to say wheter or not to hide nsfw items
+      var cookie = null;          // our login cookie
             
       
       // we will add our javascript code here
       function fetch_reddit_links(last_item, sub_reddit, tab){
         var links = document.getElementById("links");   // our links div
         
+        query = "http://www.reddit.com/" + sub_reddit + tab + ".json?jsonp=?&limit=100";
+        
         // if we do not have a last_item we leave off the after query param
-        if (last_item == null) {
-          query = "http://www.reddit.com/" + sub_reddit + "/" + tab + ".json?jsonp=?&limit=100";
-        }
-        else {
-          query = "http://www.reddit.com/" + sub_reddit + "/" + tab + ".json?jsonp=?&limit=100&after=" + last_item
+        if (last_item != null) {
+          query = query + "&after=" + last_item;
         }
         
         // if nsfw_mode is nsfw:show then we can show nsfw else hide it
@@ -85,7 +86,12 @@
         }
         
         // set our current sub label
-        $("#current_sub").html(current_sub);
+        // if it's == "" - say we're on the frnt page
+        if(sub_reddit != ""){
+          $("#current_sub").html(sub_reddit);
+        } else {
+          $("#current_sub").html("[front page]");
+        }
         
         // debugging the query string
         document.getElementById("debug_query").innerHTML = query;
@@ -160,6 +166,12 @@
           // set current_sub = the info from pick_sub_chooser_text
           current_sub = "r/" + document.getElementById("pick_sub_chooser_text").value;
           
+          // we did not type in a subreddit, let's make it "" and that will tell
+          // our fetch function to take us to the front page
+          if (current_sub == "r/") {
+            current_sub = "";
+          }
+          
           // hide the sub picker
           $("#pick_sub_chooser").fadeOut();
           
@@ -189,7 +201,7 @@
         $("#hot").click(function() {
           count = 0;    // resetting vars
           after = "";
-          current_tab = "hot";
+          current_tab = "/hot";
           document.getElementById("links").innerHTML = "";
           fetch_reddit_links(null, current_sub, current_tab);
         });
@@ -201,7 +213,7 @@
           // should probably allow the ability to modify the sort
           count = 0;    // resetting vars
           after = "";
-          current_tab = "new";
+          current_tab = "/new";
           document.getElementById("links").innerHTML = "";
           fetch_reddit_links(null, current_sub, current_tab);
         });
@@ -210,7 +222,7 @@
         $("#top").click(function() {
           count = 0;    // resetting vars
           after = "";
-          current_tab = "top";
+          current_tab = "/top";
           document.getElementById("links").innerHTML = "";
           fetch_reddit_links(null, current_sub, current_tab);
         });
@@ -219,6 +231,18 @@
         // this is for debugging only
         $("#debug_query").click(function() {
           // maybe do something fany here like enter in custom query?
+          var user = prompt('user');
+          var passwd = prompt('passwd');
+          
+          $.ajax({
+              url: '/login',
+              type: 'POST',
+              data: 'user=' + user + '&passwd=' + passwd + '&api_type=json',
+              success: function(res) {
+                  cookie = res;
+              }
+          });
+          
         });
 
         // setup callback for endless scroll
