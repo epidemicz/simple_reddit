@@ -37,6 +37,14 @@
         font-family:tahoma;
         font-size:small;
       }
+      ul{
+        list-style-type:none;
+        margin:0;
+        padding:0;
+      }
+      Ul li:hover{
+        
+      }
       a:hover{
         background-color:#EEEEEE;
       }
@@ -47,6 +55,20 @@
       .subreddit:hover{
         color:red;
         text-decoratioN:underline;
+      }
+      .reddit_link {
+        // nothing
+      }
+      .reddit_link_current {
+        font-weight:bold;
+      }
+      .more_link {
+        
+        
+      }
+      .more {
+        display:none;
+        color:red;
       }
       form{
         padding:0;
@@ -64,6 +86,7 @@
       var current_tab = "/hot";   // current tab of the sub we're on, hot new or top
       var show_nsfw = false;      // flag to say wheter or not to hide nsfw items
       var cookie = null;          // our login cookie
+      var reddit_links = new Array();   // holds returned info
             
       
       // we will add our javascript code here
@@ -104,7 +127,6 @@
           // loop through each of the items in data.data.children
           $.each(data.data.children, function(i, item) {
             var sub_color = "black";  // subreddit color
-            count = count + 1;        // running tally of the # of items we've returned
             
             // if nsfw flag set, make subreddit color red
             if (item.data.over_18 == true) {
@@ -122,13 +144,43 @@
             else {
               sub_color = "black";
             }
+            // not that since this was moved after the nsfw flag
+            // the nsfw items should not be in the array at all
+            // and the count should be even, you wont see missing numbers.
+            // running tally of the # of items we've returned
+            count = count + 1;        
+            
+            // store data in our array
+            reddit_links[count] = item;
               
             // create new span for each "row"
-            newLink = document.createElement("span");
-            newLink.innerHTML = count + ".) " + "<span style=\"color:" + sub_color + "\">[<a target=\"_blank\" class=\"subreddit\" href=\"http://www.reddit.com/r/" + item.data.subreddit + "\">" + item.data.subreddit + "</a>]</span> <a target=\"_blank\" href=\"" + item.data.url + "\">" + item.data.title + "</a> [<a target=\"_blank\" href=\"http://reddit.com" + item.data.permalink + "\">comments</a>]<br/>";
+            newLink = document.createElement("li");
+            
+            // just for fun, let's see all the thumbnails
+            //if (item.data.thumbnail == "" || item.data.thumbnail .indexOf(".com") == -1) {
+            //  return true;
+            //}
+            //newLink.innerHTML = "<img src=\"" + item.data.thumbnail + "\" />";
+            
+            newLink.innerHTML = "<span style=\"color:#CCC;\">&nbsp;&nbsp;" + count + "&nbsp;&nbsp;</span><span style=\"color:" + sub_color + "\"> [<a target=\"_blank\" class=\"subreddit\" href=\"http://www.reddit.com/r/" + item.data.subreddit + "\">" + item.data.subreddit + "</a>]</span> <a target=\"_blank\" class=\"reddit_link\" href=\"" + item.data.url + "\">" + item.data.title + "</a> [<a target=\"_blank\" href=\"http://reddit.com" + item.data.permalink + "\">comments</a>] [<a class=\"more_link\" href=\"javascript:null(0)\">+</a>]<div id=\"" + item.data.id + "\"class=\"more\">Oh boy a super secret, hidden message!<img src=\"" + item.data.url + ".jpg\" /> " + count + "</div>";
             
             // appending the span to our links div
             links.appendChild(newLink);
+          });
+          
+          // clicked a reddit_link, isn't this fun?
+          $(".reddit_link").mousedown(function(i) {
+            // remove current class from all other instance
+            $(".reddit_link").removeClass('reddit_link_current');
+            $(this).toggleClass('reddit_link_current');
+            //$(".reddit_link").removeClass('reddit_link').addClass('reddit_link_current');
+          });
+          
+          $(".more_link").click(function(i) {
+            var index = parseInt($(".more_link").index(this));
+            //alert($(".more:eq(" + index + ")").html());
+            //$(".more:eq(" + index + ")").slideToggle();
+            //alert(reddit_links[index].data.title);
           });
         });
       } 
@@ -247,7 +299,7 @@
 
         // setup callback for endless scroll
         $(document).endlessScroll({
-          bottomPixels:300,
+          bottomPixels:500,
           fireOnce: true,
           fireDelay: 5000,
           loader:"<div id=\"divpopup\">Loading... Please wait..</div>",
@@ -288,6 +340,9 @@
         r/<input type="text" id="pick_sub_chooser_text"/>
       </form>
     </div>
-    <div id="links" style="padding-top:20px;"></div>
+    <div style="padding-top:20px;">
+      <ul id="links">
+      </ul>
+    </div>
   </body>                                                       
 </html>
