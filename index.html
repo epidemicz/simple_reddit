@@ -6,8 +6,8 @@
         position: fixed;
         top: 25px;
         left: 0px;
-        border: 1px solid #black;
-        background-color: #EEE;
+        border: 1px solid #EEE;
+        background-color: white;
         color: black;
         padding: 5px;
         z-index: 10;
@@ -37,13 +37,10 @@
         font-family:tahoma;
         font-size:small;
       }
-      ul{
+      #links{
         list-style-type:none;
         margin:0;
         padding:0;
-      }
-      Ul li:hover{
-        
       }
       a:hover{
         background-color:#EEEEEE;
@@ -60,10 +57,9 @@
         // nothing
       }
       .reddit_link_current {
-        font-weight:bold;
+        color:red;
       }
       .more_link {
-        
         
       }
       .more {
@@ -73,6 +69,29 @@
       form{
         padding:0;
         margin:0;
+      }
+      #navbar{
+        margin: 0;
+        padding: 0;
+      }
+      #navbar li {
+        list-style:none;
+        float:left;
+        background-color:white;
+      }
+      #navbar li:hover ul{
+        display: block;
+        position: absolute;
+        margin: 0;
+        padding: 0;
+      }
+      #navbar li:hover li{
+        float:none;
+        padding:2px;
+      }
+      #navbar li ul {
+        display: none;
+        border:solid 1px #EEE;
       }
     </style>
     <script type="text/javascript" src="jquery.js"></script>          
@@ -323,15 +342,32 @@
 
     </script>                                                               
   </head>                                                                 
-  <body>                                                                  
-    <!-- we will add our HTML content here -->     
+  <body>                                                                   
     <div id="header">
-      <span>simple reddit: <span id="current_sub">r/all</span></span> | 
-      <a href="javascript:null(0);" id="pick_sub">pick subreddit</a> | 
-      <a href="javascript:null(0);" id="nsfw_mode">nsfw:hide</a> | 
-      <a href="javascript:null(0);" id="hot">hot</a> | 
-      <a href="javascript:null(0);" id="new">new</a> | 
-      <a href="javascript:null(0);" id="top">top</a> | 
+      <span style="float:left;">
+        <span>simple reddit: <span id="current_sub">r/all</span></span>&nbsp;|&nbsp;
+      </span>
+      <ul id="navbar">
+        <li><a href="javascript:null(0);" id="pick_sub">pick subreddit</a>&nbsp;|&nbsp;</li>
+        <li><a href="javascript:null(0);" id="nsfw_mode">nsfw:hide</a>&nbsp;|&nbsp;</li>
+        <li><a href="javascript:null(0);" id="hot">hot</a>&nbsp;|&nbsp;</li>
+        <li><a href="javascript:null(0);" id="new">new</a>&nbsp;|&nbsp;
+          <ul>
+            <li><a href="#">new</a></li>
+            <li><a href="#">rising</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="javascript:null(0);" id="top">top</a>&nbsp;|&nbsp;
+          <ul>
+            <li><a href="#">today</a></li>
+            <li><a href="#">this week</a></li>
+            <li><a href="#">this month</a></li>
+            <li><a href="#">this year</a></li>
+            <li><a href="#">all time</a></li>
+          </ul>
+        </li>
+      </ul> 
       <span id="debug_after"></span>
       <span>query=<span id="debug_query"></span></span>
     </div>
