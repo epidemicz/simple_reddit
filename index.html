@@ -110,9 +110,26 @@
       
       // we will add our javascript code here
       function fetch_reddit_links(last_item, sub_reddit, tab){
-        var links = document.getElementById("links");   // our links div
-        
-        query = "http://www.reddit.com/" + sub_reddit + tab + ".json?jsonp=?&limit=100";
+        var use_sort = false;
+	var links = document.getElementById("links");   // our links div
+
+	// check for - in tab name
+	if (tab.indexOf("-") != -1) {
+	  // found - in tab name
+	  // info after - is the sort type
+	  var sort = tab.substring(tab.indexOf("-")+1);
+	  tab = tab.substring(0, tab.indexOf("-"));
+	  use_sort = true;
+	  //alert(sort);
+	  //alert(tab);
+	}
+       
+	if (use_sort) { 
+          query = "http://www.reddit.com/" + sub_reddit + tab + ".json?jsonp=?&limit=100&sort=" + tab.substring(1) + "&t=" + sort;
+	} 
+	else {
+          query = "http://www.reddit.com/" + sub_reddit + tab + ".json?jsonp=?&limit=100";
+	} 
         
         // if we do not have a last_item we leave off the after query param
         if (last_item != null) {
@@ -297,8 +314,86 @@
           document.getElementById("links").innerHTML = "";
           fetch_reddit_links(null, current_sub, current_tab);
         });
+
+        // clicked top-week link
+	$("#top-week").click(function() {
+	  count = 0;	// resetting vars
+ 	  after = "";
+	  current_tab = "/top-week";
+	  document.getElementById("links").innerHTML = "";
+	  fetch_reddit_links(null, current_sub, current_tab);
+	});
+
+
+	// clicked top-week link
+	$("#top-hour").click(function() {
+	  count = 0;	// resetting vars
+ 	  after = "";
+	  current_tab = "/top-hour";
+	  document.getElementById("links").innerHTML = "";
+	  fetch_reddit_links(null, current_sub, current_tab);
+	});
+
+
+	// clicked top-week link
+	$("#top-day").click(function() {
+	  count = 0;	// resetting vars
+ 	  after = "";
+	  current_tab = "/top-day";
+	  document.getElementById("links").innerHTML = "";
+	  fetch_reddit_links(null, current_sub, current_tab);
+	});
+
+
+	// clicked top-week link
+	$("#top-month").click(function() {
+	  count = 0;	// resetting vars
+ 	  after = "";
+	  current_tab = "/top-month";
+	  document.getElementById("links").innerHTML = "";
+	  fetch_reddit_links(null, current_sub, current_tab);
+	});
+
+
+	// clicked top-week link
+	$("#top-year").click(function() {
+	  count = 0;	// resetting vars
+ 	  after = "";
+	  current_tab = "/top-year";
+	  document.getElementById("links").innerHTML = "";
+	  fetch_reddit_links(null, current_sub, current_tab);
+	});
+
+	// clicked top-week link
+	$("#top-all").click(function() {
+	  count = 0;	// resetting vars
+ 	  after = "";
+	  current_tab = "/top-all";
+	  document.getElementById("links").innerHTML = "";
+	  fetch_reddit_links(null, current_sub, current_tab);
+	});
+
         
-        // clicked debug_query text 
+	// clicked top-week link
+	$("#new-new").click(function() {
+	  count = 0;	// resetting vars
+ 	  after = "";
+	  current_tab = "/new-new";
+	  document.getElementById("links").innerHTML = "";
+	  fetch_reddit_links(null, current_sub, current_tab);
+	});
+
+
+	// clicked top-week link
+	$("#new-rising").click(function() {
+	  count = 0;	// resetting vars
+ 	  after = "";
+	  current_tab = "/top-week";
+	  document.getElementById("links").innerHTML = "";
+	  fetch_reddit_links(null, current_sub, current_tab);
+	});
+
+	// clicked debug_query text 
         // this is for debugging only
         $("#debug_query").click(function() {
           // maybe do something fany here like enter in custom query?
@@ -353,18 +448,18 @@
         <li><a href="javascript:null(0);" id="hot">hot</a>&nbsp;|&nbsp;</li>
         <li><a href="javascript:null(0);" id="new">new</a>&nbsp;|&nbsp;
           <ul>
-            <li><a href="#">new</a></li>
-            <li><a href="#">rising</a></li>
+            <li><a href="javascript:null(0);" id="new-new">new</a></li>
+            <li><a href="javascript:null(0);" id="new-rising">rising</a></li>
           </ul>
         </li>
         <li>
           <a href="javascript:null(0);" id="top">top</a>&nbsp;|&nbsp;
           <ul>
-            <li><a href="#">today</a></li>
-            <li><a href="#">this week</a></li>
-            <li><a href="#">this month</a></li>
-            <li><a href="#">this year</a></li>
-            <li><a href="#">all time</a></li>
+            <li><a href="javascript:null(0);" id="top-day" >today</a></li>
+            <li><a href="javascript:null(0);" id="top-week">this week</a></li>
+            <li><a href="javascript:null(0);" id="top-month">this month</a></li>
+            <li><a href="javascript:null(0);" id="top-year">this year</a></li>
+            <li><a href="javascript:null(0);" id="top-all">all time</a></li>
           </ul>
         </li>
       </ul> 
